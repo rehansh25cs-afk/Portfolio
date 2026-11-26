@@ -1,14 +1,17 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+import { pages } from './src/site.js'
+import { portfolioSeo } from './scripts/seo.js'
 
 export default defineConfig({
+  appType: 'mpa',
+  plugins: [portfolioSeo()],
   build: {
     rollupOptions: {
-      input: {
-        about: fileURLToPath(new URL('./index.html', import.meta.url)),
-        projects: fileURLToPath(new URL('./projects/index.html', import.meta.url)),
-        contact: fileURLToPath(new URL('./contact/index.html', import.meta.url)),
-      },
+      input: Object.fromEntries(pages.map(({ id, path }) => [
+        id,
+        fileURLToPath(new URL(`.${path}index.html`, import.meta.url)),
+      ])),
     },
   },
 })

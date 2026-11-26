@@ -48,12 +48,12 @@ function smoothScroll(root) {
     }
   }, { signal: listeners.signal })
 
-  const dialog = root.querySelector('dialog')
+  const dialogs = root.querySelectorAll('dialog')
   const observer = new MutationObserver(() => {
-    if (dialog.open) lenis.stop()
+    if (root.querySelector('dialog[open]')) lenis.stop()
     else lenis.start()
   })
-  if (dialog) observer.observe(dialog, { attributes: true, attributeFilter: ['open'] })
+  for (const dialog of dialogs) observer.observe(dialog, { attributes: true, attributeFilter: ['open'] })
 
   return () => {
     listeners.abort()
@@ -81,7 +81,7 @@ function heroEntrance(hero) {
 
 function sectionEntrances(root) {
   const listeners = new AbortController()
-  const selectors = '.about-lead, .approach article, .tech-header, .tech-directory, .contact-main, .section-heading, .project-row, .project-preview'
+  const selectors = '.about-lead, .approach article, .tech-header, .tech-directory, .contact-main, .section-heading, .project-index > li, .project-preview'
 
   for (const section of root.querySelectorAll(selectors)) {
     if (section.getClientRects().length === 0 && section.matches('.project-preview')) continue
@@ -195,21 +195,31 @@ function pointerDepth(root) {
       y: gsap.quickTo(layer, 'y', { duration: 0.45, ease: 'power3.out' }),
     }))
     let bounds
+    let frame = 0
+    let clientX, clientY
 
-    function move(event) {
-      if (event.pointerType !== 'mouse') return
-
+    function update() {
+      frame = 0
       if (!bounds) {
         const rect = region.getBoundingClientRect()
         if (!rect.width || !rect.height) return
         bounds = { left: rect.left + window.scrollX, top: rect.top + window.scrollY, width: rect.width, height: rect.height }
       }
-      const x = clamp((event.clientX + window.scrollX - bounds.left) / bounds.width - 0.5)
-      const y = clamp((event.clientY + window.scrollY - bounds.top) / bounds.height - 0.5)
+      const x = clamp((clientX + window.scrollX - bounds.left) / bounds.width - 0.5)
+      const y = clamp((clientY + window.scrollY - bounds.top) / bounds.height - 0.5)
       position.forEach((axis) => { axis.x(x * width); axis.y(y * height) })
     }
 
+    function move(event) {
+      if (event.pointerType !== 'mouse') return
+      clientX = event.clientX
+      clientY = event.clientY
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
     function reset() {
+      cancelAnimationFrame(frame)
+      frame = 0
       bounds = undefined
       position.forEach((axis) => { axis.x(0); axis.y(0) })
     }
@@ -217,6 +227,7 @@ function pointerDepth(root) {
     region.addEventListener('pointermove', move, options)
     region.addEventListener('pointerleave', reset, options)
     window.addEventListener('resize', reset, options)
+    listeners.signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true })
   }
 
   return () => listeners.abort()

@@ -41,7 +41,7 @@ export function TechStack() {
     <section className="tech-section section-light" aria-labelledby="tech-title">
       <div className="shell tech-shell">
         <div className="tech-header">
-          <h2 id="tech-title"><span className="heading-mask"><span className="heading-inner">Technologies I use<span className="title-dot">.</span></span></span></h2>
+          <h2 id="tech-title"><span className="heading-mask"><span className="heading-inner">Technologies I use<span className="title-dot" aria-hidden="true">.</span></span></span></h2>
           <p>From interface design to APIs, data, and version control.</p>
         </div>
         <div className="tech-directory">
@@ -59,7 +59,7 @@ export function TechStack() {
                 onFocus={() => setActive(index)}
                 aria-label={tool.name + ' website (opens in a new tab)'}
               >
-                <img src={import.meta.env.BASE_URL + 'media/tech/' + tool.icon + '.svg'} width="44" height="44" alt="" />
+                <img src={import.meta.env.BASE_URL + 'media/tech/' + tool.icon + '.svg'} width="44" height="44" alt="" loading="lazy" decoding="async" />
                 <span>{tool.name}</span>
               </a>
             ))}
